@@ -1,3 +1,64 @@
+*Hallo There* is a combination of tools to generate realistic talking head video of a multi-person audio file,
+also known as lipsyncing.
+
+I created it because I found Google's NotebookLM podcast audio feature, which produces fantastic audio 
+quality. I've been interested in AI-generated images for years and saw the opportunity to combine them.
+
+The major tools are Hallo and speaker-diarization-3.1, as well as your preferred image generation tool.
+
+This project is extremely barebones. You'll need to be at least a little familiar with Python environment 
+management and dependency installation. You'll also want a video card with at least 8GB of video memory - 
+even still, expect it to take about 10 minutes of processing per second of video!
+
+# Install Summary
+The basic idea for installation and use is:
+1. Get your audio file
+2. Use speaker-diarization-3.1
+3. Generate or get source images
+4. Generate the video clips with Hallo
+5. Combine the video clips
+
+You'll need to add your files to these directories:
+```
+project/
+│
+├── source_images/
+│   ├── SPEAKER_00_pose_0.png
+│   ├── SPEAKER_00_pose_1.png
+│   ├── SPEAKER_00_pose_2.png
+│   ├── SPEAKER_00_pose_3.png
+│   ├── SPEAKER_01_pose_0.png
+│   ├── SPEAKER_01_pose_1.png
+│   ├── SPEAKER_01_pose_2.png
+│   └── SPEAKER_01_pose_3.png
+│
+├── audio/
+│   └── input_audio.wav
+│
+├── diarization/
+│   └── diarization.rttm
+│
+└── output_videos/
+```
+
+# Installation Step Detail
+TBD
+
+# Run
+Once you've done set up the speaker pose images, audio, and diarization files, run generate_videos.py 
+and then combine_videos.py.
+
+# Remaining work
+Work to be done:
+- ✅ Proof-of-concept
+- ☑️ Add examples
+- ☑️ Installation instructions
+- ☑️ Document configuration options
+*Hallo There* is licensed under MIT. Hallo and speaker-diarization-3.1 are also licensed under MIT.
+
+# Hallo
+Because Hallo is doing the heavy lifting in this project, its readme follows. You'll want to follow those setup instructions first, which includes downloading the pre-built models.
+
 <h1 align='center'>Hallo: Hierarchical Audio-Driven Visual Synthesis for Portrait Image Animation</h1>
 
 <div align='center'>
