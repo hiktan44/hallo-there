@@ -5,6 +5,9 @@ also known as lipsyncing.
 
 https://github.com/user-attachments/assets/2123dcbe-7f41-4064-bfe5-f5fdf39f836a
 
+*This video is for demonstration purposes only. I mixed up which speaker was which, but the I*
+*found the result pretty funny!*
+
 I created it because I found Google's [NotebookLM](https://notebooklm.google.com/) podcast audio feature, 
 which produces fantastic audio quality. I've been interested in AI-generated images for years and saw 
 the opportunity to combine them.
@@ -130,4 +133,4 @@ Work to be done:
 - ☑️ Document configuration options
 - ☑️ Replace use of SD 1.5 with Flux schnell
 
-*Hallo There* is licensed under MIT. Thank you to the Hallo team for doing the heavy lifting on this project!
+*Hallo There* is licensed under MIT. There is no affiliation between this project and my employer. Thank you to the Hallo team for doing the heavy lifting on this project!
