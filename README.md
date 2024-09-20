@@ -1,11 +1,7 @@
 *Hallo There* is a combination of tools to generate realistic talking head video of a multi-person audio file,
 also known as lipsyncing.
 
-<video width="512" height="256" controls>
-  <source src="https://github.com/abrakjamson/hallo-there/blob/mainexamples/hallo_there_short.mp4
-  " type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+https://github.com/user-attachments/assets/2123dcbe-7f41-4064-bfe5-f5fdf39f836a
 
 I created it because I found Google's NotebookLM podcast audio feature, which produces fantastic audio 
 quality. I've been interested in AI-generated images for years and saw the opportunity to combine them.
