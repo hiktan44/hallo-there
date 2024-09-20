@@ -133,4 +133,5 @@ Work to be done:
 - ☑️ Document configuration options
 - ☑️ Replace use of SD 1.5 with Flux schnell
 
-*Hallo There* is licensed under MIT. There is no affiliation between this project and my employer. Thank you to the Hallo team for doing the heavy lifting on this project!
+*Hallo There* is licensed under MIT. There is no affiliation between this project and my employer or any 
+other organization. Thank you to the Hallo team for creating an excellent project under MIT!
