@@ -8,7 +8,11 @@ https://github.com/user-attachments/assets/2123dcbe-7f41-4064-bfe5-f5fdf39f836a
 *This video is for demonstration purposes only. I mixed up which speaker was which, but the I*
 *found the result pretty funny!*
 
-I created it because I found Google's [NotebookLM](https://notebooklm.google.com/) podcast audio feature, 
+A full 10-minute example is on YouTube:
+
+[![Hallo-There Example](https://img.youtube.com/vi/lma7rSx_zbE/0.jpg)](https://www.youtube.com/watch?v=lma7rSx_zbE)
+
+I created this project because I found Google's [NotebookLM](https://notebooklm.google.com/) podcast audio feature, 
 which produces fantastic audio quality. I've been interested in AI-generated images for years and saw 
 the opportunity to combine them.
 
