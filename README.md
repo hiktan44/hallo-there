@@ -7,8 +7,8 @@ quality. I've been interested in AI-generated images for years and saw the oppor
 The major tools are Hallo and speaker-diarization-3.1, as well as your preferred image generation tool.
 
 This project is extremely barebones. You'll need to be at least a little familiar with Python environment 
-management and dependency installation. You'll also want a video card with at least 8GB of video memory - 
-even still, expect it to take about 10 minutes of processing per second of video!
+management and dependency installation. You'll also want a video card with at least 12GB of video memory - 
+even still, expect it to take about 2-3 minutes of processing per second of video!
 
 # Install Summary
 The basic idea for installation and use is:
@@ -42,11 +42,47 @@ project/
 ```
 
 # Installation Step Detail
-TBD
+1. Create and activate a Conda environment
+2. Clone this repo
+3. Add source images and audio
+4. Create diarization file
+4.1. Navigate to the root directory of the project
+4.2. Install pyannote.audio 3.1 with pip install pyannote.audio
+4.2. Accept pyannote/segmentation-3.0 user conditions
+4.3. Accept pyannote/speaker-diarization-3.1 user conditions
+4.4. Create access token at hf.co/settings/tokens.
+4.5. python diarization.py -access_token the_token_you_generated_on_huggingface
+5. Install hallo and prebuilt packages
+5.1. pip install -r requirements.txt
+5.2. pip install .
+5.3. Install ffmpeg and add it to your system path variable
+5.4. Get the pretrained models
+5.4.1. git lfs install
+5.4.2 git clone https://huggingface.co/fudan-generative-ai/hallo pretrained_models
+
+I've tested on Windows 11 with a GeForce 3060 12GB and Ubuntu 22.04 Linux with an A40.
+If these steps are completely unintelligible, that's OK! You'll have a better time using one of 
+the paid and proprietary services to do this. Check out HeyGen, Hydra, or LiveImageAI.
 
 # Run
-Once you've done set up the speaker pose images, audio, and diarization files, run generate_videos.py 
-and then combine_videos.py.
+Once you've complted the install and prepared the speaker pose images, audio, and diarization files, 
+run generate_videos.py
+``` python
+generate_videos.py
+```
+You can specify -mode full to generate slight head movements while an avatar is not speaking, at the cost of
+double the runtime.
+
+After a lot of time and a lot of console output, you'll get the chunks of video in the output_videos folder. 
+Next run combine_videos.py.
+``` python
+combine_videos.py
+```
+This will also take some time, but not nearly as much as creating the chunks. The project root will contain
+final_output.mp4
+
+# Configuration options
+To be documented. You can see them in the main python scripts.
 
 # Remaining work
 Work to be done:
@@ -54,6 +90,7 @@ Work to be done:
 - ☑️ Add examples
 - ☑️ Installation instructions
 - ☑️ Document configuration options
+
 *Hallo There* is licensed under MIT. Hallo and speaker-diarization-3.1 are also licensed under MIT.
 
 # Hallo

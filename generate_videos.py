@@ -2,21 +2,23 @@ import os
 import subprocess
 import tempfile
 from pydub import AudioSegment
+import argparse
+from collections import defaultdict
 
 # Configuration
 AUDIO_FILE = "audio/input_audio.wav"          # Path to your main audio file
 RTTM_FILE = "diarization/diarization.rttm"    # Path to your RTTM file
 SOURCE_IMAGES_DIR = "source_images/"          # Directory containing source images
-INFERENCE_SCRIPT = "inference.py"             # Path to Hallo's inference script
+INFERENCE_SCRIPT = "scripts/inference.py"             # Path to Hallo's inference script
 OUTPUT_VIDEOS_DIR = "output_videos/"          # Directory to save output videos
+
 MERGE_GAP_THRESHOLD = 1.2                      # Maximum gap (in seconds) to merge segments
-SPLIT_GAP = True                               # Whether to split gaps between segments
 
 # Ensure output directory exists
 os.makedirs(OUTPUT_VIDEOS_DIR, exist_ok=True)
 
 # Initialize speaker pose counters
-speaker_pose_counters = {}
+speaker_pose_counters = defaultdict(int)
 
 def parse_and_merge_rttm(rttm_path, gap_threshold):
     """
@@ -65,37 +67,7 @@ def parse_and_merge_rttm(rttm_path, gap_threshold):
             current = next_seg
     merged_segments.append(current)  # Append the last segment
 
-    # Eliminate gaps by splitting them between segments
-    if SPLIT_GAP:
-        merged_segments = eliminate_gaps(merged_segments)
-
     return merged_segments
-
-def eliminate_gaps(segments):
-    """
-    Adjust the start and end times of segments to eliminate gaps by splitting
-    the gap time equally between the preceding and succeeding segments.
-
-    Args:
-        segments (list): List of merged segments.
-
-    Returns:
-        List of adjusted segments with no gaps.
-    """
-    adjusted_segments = segments.copy()
-    for i in range(len(adjusted_segments) - 1):
-        current_seg = adjusted_segments[i]
-        next_seg = adjusted_segments[i + 1]
-        gap = next_seg['start'] - current_seg['end']
-        if gap > 0:
-            half_gap = gap / 2
-            # Adjust the end of the current segment
-            adjusted_segments[i]['end'] += half_gap
-            # Adjust the start of the next segment
-            adjusted_segments[i + 1]['start'] -= half_gap
-            print(f"Eliminated gap of {gap:.3f}s between chunk {i} and {i+1} by splitting {half_gap:.3f}s to each.")
-
-    return adjusted_segments
 
 def extract_audio_chunk(audio_path, start, end):
     """
@@ -130,8 +102,6 @@ def get_source_image(speaker, pose_counters):
     Returns:
         Path to the selected source image.
     """
-    if speaker not in pose_counters:
-        pose_counters[speaker] = 0
     pose_index = pose_counters[speaker] % 4  # Assuming 4 poses: 0-3
     pose_counters[speaker] += 1
     image_filename = f"{speaker}_pose_{pose_index}.png"
@@ -168,24 +138,27 @@ def run_inference(source_image, driving_audio, output_video):
         print(f"Error during inference: {e}")
         raise
 
-def main():
-    # Parse and merge RTTM file
-    merged_segments = parse_and_merge_rttm(RTTM_FILE, MERGE_GAP_THRESHOLD)
-    print(f"Total merged segments: {len(merged_segments)}")
+def generate_chunks(merged_segments, mode):
+    """
+    Generate video chunks based on merged segments.
 
+    Args:
+        merged_segments (list): List of merged segment dictionaries.
+        mode (str): 'chunks' or 'full'.
+    """
     for idx, segment in enumerate(merged_segments):
         speaker = segment['speaker']
         start = segment['start']
         end = segment['end']
         duration = end - start
 
-        print(f"Processing chunk {idx}: Speaker={speaker}, Start={start:.3f}, Duration={duration:.3f} seconds")
+        print(f"Processing chunk {idx:02d}: Speaker={speaker}, Start={start:.3f}, Duration={duration:.3f} seconds")
 
         # Extract audio chunk
         try:
             audio_chunk_path = extract_audio_chunk(AUDIO_FILE, start, end)
         except Exception as e:
-            print(f"Failed to extract audio chunk {idx}: {e}")
+            print(f"Failed to extract audio chunk {idx:02d}: {e}")
             continue
 
         # Select source image
@@ -198,17 +171,48 @@ def main():
 
         # Define output video path
         speaker_id = speaker.split('_')[-1]  # Extract '01' from 'SPEAKER_01'
-        output_video = os.path.join(OUTPUT_VIDEOS_DIR, f"chunk_{idx}_speaker_{speaker_id}.mp4")
+        output_video = os.path.join(OUTPUT_VIDEOS_DIR, f"chunk_{idx:02d}_speaker_{speaker_id}.mp4")
 
         # Run inference
         try:
             run_inference(source_image, audio_chunk_path, output_video)
             print(f"Generated video: {output_video}")
         except Exception as e:
-            print(f"Failed to generate video for chunk {idx}: {e}")
+            print(f"Failed to generate video for chunk {idx:02d}: {e}")
         finally:
             # Clean up temporary audio file
             os.unlink(audio_chunk_path)
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate lip-synced video chunks from audio based on diarization RTTM.")
+    parser.add_argument(
+        "--mode",
+        choices=["chunks", "full"],
+        default="chunks",
+        help="Mode of operation: 'chunks' to generate video only during speaking segments, 'full' to generate a complete video covering the entire audio duration."
+    )
+    args = parser.parse_args()
+
+    mode = args.mode
+    print(f"Running in '{mode}' mode.")
+
+    # Parse and merge RTTM file
+    merged_segments = parse_and_merge_rttm(RTTM_FILE, MERGE_GAP_THRESHOLD)
+    print(f"Total merged segments: {len(merged_segments)}")
+
+    if mode == "chunks":
+        generate_chunks(merged_segments, mode)
+        print("Video chunks generation completed.")
+    elif mode == "full":
+        # In 'full' mode, generate video chunks and a timeline for assembling the full video
+        # Generate video chunks
+        generate_chunks(merged_segments, mode)
+        print("Video chunks generation completed.")
+
+        # Additional steps for 'full' mode can be handled in the combining script
+        # Since generating the full video requires precise alignment and handling of static images,
+        # it's more efficient to manage it in the combining script.
+        print("Note: In 'full' mode, assembling the complete video will be handled by the combining script.")
 
 if __name__ == "__main__":
     main()
