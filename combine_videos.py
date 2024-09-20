@@ -1,15 +1,19 @@
+"""
+Copyright 2024 Abram Jackson
+See LICENSE
+"""
+
 import os
-import re
 from moviepy.editor import (
     VideoFileClip,
     ImageClip,
     AudioFileClip,
     CompositeVideoClip,
-    concatenate_videoclips,
     clips_array,
     ColorClip,
 )
 from collections import defaultdict
+import argparse
 
 # Configuration
 AUDIO_FILE = "audio/input_audio.wav"          # Path to your main audio file
@@ -23,17 +27,16 @@ SPEAKER_RIGHT = "SPEAKER_00"   # Speaker on the right
 
 NUM_POSES = 4                  # Number of pose images per speaker
 TRANSITION_DURATION = 0.5      # Duration of fade transitions in seconds
-BLACK_FADE_DURATION = 1.0      # Duration to fade to/from black
+GAP_THRESHOLD = 1.2            # Maximum gap (in seconds) to merge segments
 
-# Ensure output directory exists
-os.makedirs(OUTPUT_VIDEOS_DIR, exist_ok=True)
-
-def parse_rttm(rttm_path):
+def parse_rttm(rttm_path, gap_threshold):
     """
-    Parse the RTTM file and extract speaker segments.
+    Parse the RTTM file and merge consecutive segments of the same speaker
+    if the gap between them is less than or equal to the specified threshold.
 
     Args:
         rttm_path (str): Path to the RTTM file.
+        gap_threshold (float): Maximum allowed gap (in seconds) to merge segments.
 
     Returns:
         List of dictionaries with keys: 'speaker', 'start', 'end'
@@ -53,9 +56,27 @@ def parse_rttm(rttm_path):
                 'start': start_time,
                 'end': end_time
             })
+
     # Sort segments by start time
     segments.sort(key=lambda x: x['start'])
-    return segments
+
+    # Merge segments
+    merged_segments = []
+    if not segments:
+        return merged_segments
+
+    current = segments[0]
+    for next_seg in segments[1:]:
+        if (next_seg['speaker'] == current['speaker'] and
+            (next_seg['start'] - current['end']) <= gap_threshold):
+            # Merge segments
+            current['end'] = next_seg['end']
+        else:
+            merged_segments.append(current)
+            current = next_seg
+    merged_segments.append(current)  # Append the last segment
+
+    return merged_segments
 
 def get_total_duration(segments, audio_path):
     """
@@ -88,10 +109,8 @@ def get_next_pose_image(speaker, pose_counters):
     Returns:
         str: Path to the selected pose image.
     """
-    if speaker not in pose_counters:
-        pose_counters[speaker] = 0
     pose_index = pose_counters[speaker] % NUM_POSES
-    pose_counters[speaker] += 1
+    pose_counters[speaker] += 1  # Increment only when a static image is inserted
     image_filename = f"{speaker}_pose_{pose_index}.png"
     image_path = os.path.join(SOURCE_IMAGES_DIR, image_filename)
     if not os.path.exists(image_path):
@@ -157,9 +176,10 @@ def build_speaker_clips(speaker, segments, total_duration, pose_counters):
     """
     clips = []
     current_time = 0.0
-    chunk_index = 0  # Initialize chunk index for the speaker
+    chunk_index = -1  # Initialize chunk index for the speaker
 
     for segment in segments:
+        chunk_index += 1
         speak_start = segment['start']
         speak_end = segment['end']
 
@@ -170,27 +190,32 @@ def build_speaker_clips(speaker, segments, total_duration, pose_counters):
                 # Insert static image for silent period
                 try:
                     static_image_path = get_next_pose_image(speaker, pose_counters)
-                    static_clip = create_static_image_clip(static_image_path, silent_duration, fade_in=True, fade_duration=TRANSITION_DURATION)
+                    static_clip = create_static_image_clip(
+                        static_image_path,
+                        silent_duration,
+                        fade_in=True,
+                        fade_duration=TRANSITION_DURATION
+                    )
                 except FileNotFoundError:
                     # Use black screen if static image not found
                     static_clip = ColorClip(size=(512, 512), color=(0, 0, 0)).set_duration(silent_duration)
                 clips.append((static_clip, current_time))
+                print(f"Info, adding static image at {current_time} until {current_time + silent_duration}")
                 current_time += silent_duration
 
         # Insert speaking video chunk
         speaking_clip = load_video_chunk(speaker, chunk_index)
         if speaking_clip:
-            clip_duration = speaking_clip.duration
-            # Apply fade in
-            #speaking_clip = speaking_clip.fadein(TRANSITION_DURATION)
             clips.append((speaking_clip, speak_start))
-            chunk_index += 1
+            print(f"Info, adding video chunk (speaker {speaker} chunk {chunk_index}) at {current_time} until {speak_end}")
             current_time = speak_end
         else:
-            # If video chunk not found, insert black screen
-            speak_duration = speak_end - speak_start
-            black_clip = ColorClip(size=(512, 512), color=(0, 0, 0)).set_duration(speak_duration)
-            clips.append((black_clip, speak_start))
+            # It's the other speaker's turn
+            # TODO manage this better, it won't handle some scenarios
+            chunk_index += 1
+            speaking_clip = load_video_chunk(speaker, chunk_index)
+            clips.append((speaking_clip, speak_start))
+            print(f"Info, adding video chunk (speaker {speaker} chunk {chunk_index}) at {current_time} until {speak_end}")
             current_time = speak_end
 
     # Handle silent period after the last speaking segment
@@ -199,28 +224,37 @@ def build_speaker_clips(speaker, segments, total_duration, pose_counters):
         if silent_duration > 0:
             try:
                 static_image_path = get_next_pose_image(speaker, pose_counters)
-                static_clip = create_static_image_clip(static_image_path, silent_duration, fade_in=True, fade_duration=TRANSITION_DURATION)
+                static_clip = create_static_image_clip(
+                    static_image_path,
+                    silent_duration,
+                    fade_in=True,
+                    fade_duration=TRANSITION_DURATION
+                )
             except FileNotFoundError:
                 # Use black screen if static image not found
                 static_clip = ColorClip(size=(512, 512), color=(0, 0, 0)).set_duration(silent_duration)
             clips.append((static_clip, current_time))
+            print(f"Info, adding static image at {current_time} until end of video")
             current_time += silent_duration
 
     return clips
 
 def main():
-    # Parse the RTTM file
-    segments = parse_rttm(RTTM_FILE)
-    print(f"Total segments parsed: {len(segments)}")
+    parser = argparse.ArgumentParser(description="Combine lip-synced video chunks into a synchronized side-by-side video.")
+    args = parser.parse_args()
+
+    # Parse and merge RTTM file
+    merged_segments = parse_rttm(RTTM_FILE, GAP_THRESHOLD)
+    print(f"Total merged segments: {len(merged_segments)}")
+
+    # Determine total duration
+    total_duration = get_total_duration(merged_segments, AUDIO_FILE)
+    print(f"Total duration of audio: {total_duration:.2f} seconds")
 
     # Organize segments per speaker
     speaker_segments = defaultdict(list)
-    for segment in segments:
+    for segment in merged_segments:
         speaker_segments[segment['speaker']].append(segment)
-
-    # Determine total duration
-    total_duration = get_total_duration(segments, AUDIO_FILE)
-    print(f"Total duration of audio: {total_duration:.2f} seconds")
 
     # Initialize pose counters for each speaker
     pose_counters = defaultdict(int)
@@ -245,17 +279,14 @@ def main():
         pose_counters=pose_counters
     )
 
-    # Create video tracks for both speakers
+    # Create video tracks for both speakers using CompositeVideoClip without duration
     speaker_left_video = CompositeVideoClip(
         [clip.set_start(start_time) for clip, start_time in left_clips],
-        size=(512, 512),
-        duration=total_duration
+        size=(512, 512)
     )
-
     speaker_right_video = CompositeVideoClip(
         [clip.set_start(start_time) for clip, start_time in right_clips],
-        size=(512, 512),
-        duration=total_duration
+        size=(512, 512)
     )
 
     # Combine the two speaker clips side by side

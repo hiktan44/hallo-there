@@ -1,3 +1,8 @@
+"""
+Copyright 2024 Abram Jackson
+See LICENSE
+"""
+
 import os
 import subprocess
 import tempfile

@@ -1,3 +1,8 @@
+"""
+Copyright 2024 Abram Jackson
+See LICENSE
+"""
+
 import argparse
 from pyannote.audio import Pipeline
 
