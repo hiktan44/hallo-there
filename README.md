@@ -1,12 +1,17 @@
+<h1 align='center'>Hallo There: Convert two-person audio to animated lipsync video</h1>
+
 *Hallo There* is a combination of tools to generate realistic talking head video of a multi-person audio file,
 also known as lipsyncing.
 
 https://github.com/user-attachments/assets/2123dcbe-7f41-4064-bfe5-f5fdf39f836a
 
-I created it because I found Google's NotebookLM podcast audio feature, which produces fantastic audio 
-quality. I've been interested in AI-generated images for years and saw the opportunity to combine them.
+I created it because I found Google's [NotebookLM](https://notebooklm.google.com/) podcast audio feature, 
+which produces fantastic audio quality. I've been interested in AI-generated images for years and saw 
+the opportunity to combine them.
 
-The major tools are Hallo and speaker-diarization-3.1, as well as your preferred image generation tool.
+The major tools are [Hallo](https://github.com/fudan-generative-vision/hallo) and 
+[speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1), as well as your 
+preferred image generation tool.
 
 This project is extremely barebones. You'll need to be at least a little familiar with Python environment 
 management and dependency installation. You'll also want a video card with at least 8GB of video memory - 
@@ -24,8 +29,12 @@ The basic idea for installation and use is:
 
 ## Installation Step Detail
 1. Create and activate a Conda environment
-    1. If you need it, go install miniconda
-2. Clone this repo, or download the .zip and unzip it
+    1. If you need it, go install miniconda and in Windows, open the Anaconda prompt
+    2. conda create hallo-there
+    3. conda activate hallo-there
+2. Clone this repo, or download the .zip and unzip 
+    1. cd hallo-there
+    2. git clone https://github.com/abrakjamson/hallo-there.git
 3. Add source images and audio, see the Prepare Inference Data section
 4. Create diarization file
     1. Navigate to the root directory of the project
@@ -95,7 +104,7 @@ project/
 
 ## Generate
 Once you've complted the install and prepared the speaker pose images, audio, and diarization files, 
-run generate_videos.py
+run generate_videos.py. If you're using miniconda on Windows, be sure you're in the Conda shell.
 ```
 generate_videos.py
 ```
@@ -116,7 +125,7 @@ To be documented. You can see them in the main python scripts.
 # Remaining work
 Work to be done:
 - ✅ Proof-of-concept
-- ☑️ Add examples
+- ✅ Add example
 - ✅ Installation instructions
 - ☑️ Document configuration options
 - ☑️ Replace use of SD 1.5 with Flux schnell
