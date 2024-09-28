@@ -8,8 +8,6 @@ https://github.com/user-attachments/assets/2123dcbe-7f41-4064-bfe5-f5fdf39f836a
 *This video is for demonstration purposes only. I mixed up which speaker was which, but the I*
 *found the result pretty funny!*
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/lma7rSx_zbE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 A full 10-minute example is on YouTube:
 
 [![Hallo-There Example](https://img.youtube.com/vi/lma7rSx_zbE/0.jpg)](https://www.youtube.com/watch?v=lma7rSx_zbE)
