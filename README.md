@@ -10,9 +10,12 @@ https://github.com/user-attachments/assets/2123dcbe-7f41-4064-bfe5-f5fdf39f836a
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/lma7rSx_zbE" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-I created it because I found Google's [NotebookLM](https://notebooklm.google.com/) podcast audio feature, 
-which produces fantastic audio quality. I've been interested in AI-generated images for years and saw 
-the opportunity to combine them.
+A full 10-minute example is on YouTube:
+
+[![Hallo-There Example](https://img.youtube.com/vi/lma7rSx_zbE/0.jpg)](https://www.youtube.com/watch?v=lma7rSx_zbE)
+
+I created this project because I found Google's [NotebookLM](https://notebooklm.google.com/) podcast audio feature, 
+which produces fantastic audio quality. I've been interested in AI-generated images for years and saw the opportunity to combine them.
 
 The major tools are [Hallo](https://github.com/fudan-generative-vision/hallo) and 
 [speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1), as well as your 
