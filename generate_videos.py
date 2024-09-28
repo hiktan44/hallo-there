@@ -176,14 +176,14 @@ def generate_chunks(merged_segments, mode):
 
         # Define output video path
         speaker_id = speaker.split('_')[-1]  # Extract '01' from 'SPEAKER_01'
-        output_video = os.path.join(OUTPUT_VIDEOS_DIR, f"chunk_{idx:02d}_speaker_{speaker_id}.mp4")
+        output_video = os.path.join(OUTPUT_VIDEOS_DIR, f"chunk_{idx:02d}_speaker_{speaker_id}_start_{start}_end_{end}.mp4")
 
         # Run inference
         try:
             run_inference(source_image, audio_chunk_path, output_video)
             print(f"Generated video: {output_video}")
         except Exception as e:
-            print(f"Failed to generate video for chunk {idx:02d}: {e}")
+            print(f"Failed to generate video for chunk {idx:02d}, start: {start}, end: {end}: {e}")
         finally:
             # Clean up temporary audio file
             os.unlink(audio_chunk_path)
